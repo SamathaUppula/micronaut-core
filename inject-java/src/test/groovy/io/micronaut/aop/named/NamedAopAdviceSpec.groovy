@@ -23,8 +23,6 @@ class NamedAopAdviceSpec extends Specification {
         context.getBeansOfType(NamedInterface).size() == 3
         context.getBeansOfType(NamedInterface).every({ it instanceof Intercepted })
 
-
-
         cleanup:
         context.close()
     }
@@ -42,7 +40,32 @@ class NamedAopAdviceSpec extends Specification {
         context.getBeansOfType(NamedInterface).size() == 2
         context.getBeansOfType(NamedInterface).every({ it instanceof Intercepted })
 
+        cleanup:
+        context.close()
+    }
 
+    void "test manually named beans with AOP advice"() {
+        given:
+        def context = ApplicationContext.run()
+
+        expect:
+        context.getBean(OtherInterface, Qualifiers.byName("first")).doStuff() == 'first'
+        context.getBean(OtherInterface, Qualifiers.byName("second")).doStuff() == 'second'
+        context.getBeansOfType(OtherInterface).size() == 2
+        context.getBeansOfType(OtherInterface).every({ it instanceof Intercepted })
+        context.getBean(OtherBean).first.doStuff() == "first"
+        context.getBean(OtherBean).second.doStuff() == "second"
+
+        cleanup:
+        context.close()
+    }
+
+    void "test named bean relying on non iterable config"() {
+        given:
+        def context = ApplicationContext.run(['other.interfaces.third': 'third'])
+
+        expect:
+        context.getBean(OtherInterface, Qualifiers.byName("third")).doStuff() == 'third'
 
         cleanup:
         context.close()

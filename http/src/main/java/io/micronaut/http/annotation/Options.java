@@ -36,7 +36,7 @@ import java.lang.annotation.*;
 public @interface Options {
 
     /**
-     * @return The URI of the OPTIONS route if not specified inferred from the method name and arguments
+     * @return The URI of the OPTIONS route
      */
     @AliasFor(annotation = HttpMethodMapping.class, member = "value")
     @AliasFor(annotation = UriMapping.class, member = "value")
@@ -44,7 +44,7 @@ public @interface Options {
     String value() default UriMapping.DEFAULT_URI;
 
     /**
-     * @return The URI of the OPTIONS route if not specified inferred from the method name and arguments
+     * @return The URI of the OPTIONS route
      */
     @AliasFor(annotation = HttpMethodMapping.class, member = "value")
     @AliasFor(annotation = UriMapping.class, member = "value")

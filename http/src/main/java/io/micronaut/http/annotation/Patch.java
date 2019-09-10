@@ -36,7 +36,7 @@ import java.lang.annotation.*;
 public @interface Patch {
 
     /**
-     * @return The URI of the PATCH route if not specified inferred from the method name and arguments
+     * @return The URI of the PATCH route
      */
     @AliasFor(annotation = HttpMethodMapping.class, member = "value")
     @AliasFor(annotation = UriMapping.class, member = "value")
@@ -44,7 +44,7 @@ public @interface Patch {
     String value() default "";
 
     /**
-     * @return The URI of the PATCH route if not specified inferred from the method name and arguments
+     * @return The URI of the PATCH route
      */
     @AliasFor(annotation = HttpMethodMapping.class, member = "value")
     @AliasFor(annotation = UriMapping.class, member = "value")

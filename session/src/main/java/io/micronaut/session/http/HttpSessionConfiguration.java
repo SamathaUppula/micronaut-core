@@ -17,9 +17,10 @@ package io.micronaut.session.http;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.http.HttpHeaders;
+import io.micronaut.http.cookie.CookieConfiguration;
 import io.micronaut.session.SessionConfiguration;
 
-import java.time.temporal.TemporalAmount;
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -29,7 +30,7 @@ import java.util.Optional;
  * @since 1.0
  */
 @ConfigurationProperties("http")
-public class HttpSessionConfiguration extends SessionConfiguration {
+public class HttpSessionConfiguration extends SessionConfiguration implements CookieConfiguration {
 
     /**
      * Default Cookie Path.
@@ -57,7 +58,8 @@ public class HttpSessionConfiguration extends SessionConfiguration {
 
     private boolean rememberMe = DEFAULT_REMEMBERME;
     private boolean base64Encode = DEFAULT_BASE64ENCODE;
-    private TemporalAmount cookieMaxAge;
+    private Duration cookieMaxAge;
+    private Boolean cookieSecure;
     private String cookiePath = DEFAULT_COOKIEPATH;
     private String domainName;
     private String cookieName = DEFAULT_COOKIENAME;
@@ -130,6 +132,11 @@ public class HttpSessionConfiguration extends SessionConfiguration {
         return Optional.ofNullable(cookiePath);
     }
 
+    @Override
+    public Optional<Boolean> isCookieHttpOnly() {
+        return Optional.empty();
+    }
+
     /**
      * @param cookiePath Set the cookie path to use. Default value ({@value #DEFAULT_COOKIEPATH}).
      */
@@ -144,6 +151,11 @@ public class HttpSessionConfiguration extends SessionConfiguration {
         return Optional.ofNullable(domainName);
     }
 
+    @Override
+    public Optional<String> getCookieDomain() {
+        return Optional.ofNullable(domainName);
+    }
+
     /**
      * @param domainName Set the domain name to use for the cookie
      */
@@ -152,16 +164,24 @@ public class HttpSessionConfiguration extends SessionConfiguration {
     }
 
     /**
+     * @param cookieDomain Set the domain name to use for the cookie
+     */
+    public void setCookieDomain(String cookieDomain) {
+        this.domainName = domainName;
+    }
+
+    /**
      * @return The max age to use for the cookie
      */
-    public Optional<TemporalAmount> getCookieMaxAge() {
+    public Optional<Duration> getCookieMaxAge() {
         return Optional.ofNullable(cookieMaxAge);
     }
 
     /**
-     * @param cookieMaxAge Set the max age to use for the cookie
+     * Sets the maximum age of the cookie.
+     * @param cookieMaxAge The maximum age of the cookie
      */
-    public void setCookieMaxAge(TemporalAmount cookieMaxAge) {
+    public void setCookieMaxAge(Duration cookieMaxAge) {
         this.cookieMaxAge = cookieMaxAge;
     }
 
@@ -178,5 +198,21 @@ public class HttpSessionConfiguration extends SessionConfiguration {
      */
     public void setRememberMe(boolean rememberMe) {
         this.rememberMe = rememberMe;
+    }
+
+    /**
+     * @return Is cookie secure
+     */
+    public Optional<Boolean> isCookieSecure() {
+        return Optional.ofNullable(cookieSecure);
+    }
+
+    /**
+     * Sets the secure status of the cookie. Delegates to {@link io.micronaut.http.HttpRequest#isSecure()} if not set.
+     *
+     * @param cookieSecure Whether or not the cookie is secure.
+     */
+    public void setCookieSecure(Boolean cookieSecure) {
+        this.cookieSecure = cookieSecure;
     }
 }

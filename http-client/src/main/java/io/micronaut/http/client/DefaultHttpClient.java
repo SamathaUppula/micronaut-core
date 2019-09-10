@@ -840,7 +840,8 @@ public class DefaultHttpClient implements RxWebSocketClient, RxHttpClient, RxStr
                         .map((Function<HttpContent, io.micronaut.http.HttpResponse<ByteBuffer<?>>>) message -> {
                     ByteBuf byteBuf = message.content();
                     if (log.isTraceEnabled()) {
-                        log.trace("HTTP Client Streaming Response Received Chunk (length: {}) for Request: {} {}", byteBuf.readableBytes(), request.getMethod(), request.getUri());
+                        log.trace("HTTP Client Streaming Response Received Chunk (length: {}) for Request: {} {}",
+                                byteBuf.readableBytes(), request.getMethodName(), request.getUri());
                         traceBody("Response", byteBuf);
                     }
                     ByteBuffer<?> byteBuffer = byteBufferFactory.wrap(byteBuf);
@@ -885,7 +886,8 @@ public class DefaultHttpClient implements RxWebSocketClient, RxHttpClient, RxStr
                         httpContentFlowable.map(content -> {
                             ByteBuf chunk = content.content();
                             if (log.isTraceEnabled()) {
-                                log.trace("HTTP Client Streaming Response Received Chunk (length: {}) for Request: {} {}", chunk.readableBytes(), request.getMethod(), request.getUri());
+                                log.trace("HTTP Client Streaming Response Received Chunk (length: {}) for Request: {} {}",
+                                        chunk.readableBytes(), request.getMethodName(), request.getUri());
                                 traceBody("Chunk", chunk);
                             }
                             try {
@@ -1290,7 +1292,7 @@ public class DefaultHttpClient implements RxWebSocketClient, RxHttpClient, RxStr
         if (parentRequest != null) {
             filterList.add(new ClientServerContextFilter(parentRequest));
         }
-        String requestPath = requestURI.getPath();
+        String requestPath = StringUtils.prependUri("/", requestURI.getPath());
         io.micronaut.http.HttpMethod method = request.getMethod();
         for (HttpClientFilter filter : filters) {
             if (filter instanceof Toggleable && !((Toggleable) filter).isEnabled()) {
@@ -1331,6 +1333,17 @@ public class DefaultHttpClient implements RxWebSocketClient, RxHttpClient, RxStr
             }
         }
         return filterList;
+    }
+
+
+    /**
+     * Configures the HTTP proxy for the pipeline.
+     *
+     * @param pipeline The pipeline
+     * @param proxy    The proxy
+     */
+    protected void configureProxy(ChannelPipeline pipeline, Proxy proxy) {
+        configureProxy(pipeline, proxy.type(), proxy.address());
     }
 
     /**
@@ -1754,7 +1767,8 @@ public class DefaultHttpClient implements RxWebSocketClient, RxHttpClient, RxStr
                     HttpResponseStatus status = fullResponse.status();
                     HttpHeaders headers = fullResponse.headers();
                     if (log.isTraceEnabled()) {
-                        log.trace("HTTP Client Response Received for Request: {} {}", request.getMethod(), request.getUri());
+                        log.trace("HTTP Client Response Received for Request: {} {}",
+                                request.getMethodName(), request.getUri());
                         log.trace("Status Code: {}", status);
                         traceHeaders(headers);
                         traceBody("Response", fullResponse.content());
@@ -1913,7 +1927,8 @@ public class DefaultHttpClient implements RxWebSocketClient, RxHttpClient, RxStr
                             message = cause.getClass().getSimpleName();
                         }
                         if (log.isTraceEnabled()) {
-                            log.trace("HTTP Client exception ({}) occurred for request : {} {}", message, request.getMethod(), request.getUri());
+                            log.trace("HTTP Client exception ({}) occurred for request : {} {}",
+                                    message, request.getMethodName(), request.getUri());
                         }
 
                         if (cause instanceof TooLongFrameException) {
@@ -2165,11 +2180,9 @@ public class DefaultHttpClient implements RxWebSocketClient, RxHttpClient, RxStr
                 ch.config().setAutoRead(false);
             }
 
-            Optional<SocketAddress> proxy = configuration.getProxyAddress();
-            if (proxy.isPresent()) {
-                Type proxyType = configuration.getProxyType();
-                SocketAddress proxyAddress = proxy.get();
-                configureProxy(p, proxyType, proxyAddress);
+            Proxy proxy = configuration.resolveProxy(sslContext != null, host, port);
+            if (!Proxy.NO_PROXY.equals(proxy)) {
+                configureProxy(p, proxy);
             }
 
             if (sslContext != null) {

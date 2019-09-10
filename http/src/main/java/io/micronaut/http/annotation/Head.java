@@ -35,7 +35,7 @@ import java.lang.annotation.*;
 public @interface Head {
 
     /**
-     * @return The URI of the HEAD route if not specified inferred from the method name and arguments
+     * @return The URI of the HEAD route
      */
     @AliasFor(annotation = HttpMethodMapping.class, member = "value")
     @AliasFor(annotation = UriMapping.class, member = "value")
@@ -43,7 +43,7 @@ public @interface Head {
     String value() default UriMapping.DEFAULT_URI;
 
     /**
-     * @return The URI of the HEAD route if not specified inferred from the method name and arguments
+     * @return The URI of the HEAD route
      */
     @AliasFor(annotation = HttpMethodMapping.class, member = "value")
     @AliasFor(annotation = UriMapping.class, member = "value")

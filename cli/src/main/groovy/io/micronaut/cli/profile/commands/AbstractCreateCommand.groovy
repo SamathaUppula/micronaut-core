@@ -118,10 +118,8 @@ abstract class AbstractCreateCommand extends ArgumentCompletingCommand implement
             def featureNames = profile.features.collect() { Feature f -> f.name }
 
             if (createCommand instanceof AbstractCreateAppCommand) {
-                String lang = createCommand.lang?.name() ?: 'java'
-                Collection<SupportedLanguage> otherLangs = SupportedLanguage.values().findAll() { it.name() != lang}
-                for(o in otherLangs) {
-                    featureNames.removeIf({String n -> n.contains("-${o.name()}")})
+                SupportedLanguage.values().each {
+                    featureNames.remove(it.name())
                 }
             }
             // if no feature specified, show all features for the selected profile
@@ -277,6 +275,11 @@ abstract class AbstractCreateCommand extends ArgumentCompletingCommand implement
         }
 
         if (!validateBuild(cmd.build)) {
+            return false
+        }
+
+        if (cmd.features.any { SupportedLanguage.isValidValue(it) }) {
+            MicronautConsole.instance.error("Language features cannot be used with the --features flag. Use --lang instead")
             return false
         }
 
@@ -495,6 +498,8 @@ abstract class AbstractCreateCommand extends ArgumentCompletingCommand implement
             testFramework = "junit"
         else if (features.contains("spek"))
             testFramework = "spek"
+        else if (features.contains("kotlintest"))
+            testFramework = "kotlintest"
 
         testFramework
     }
